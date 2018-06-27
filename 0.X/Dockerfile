@@ -1,3 +1,17 @@
+# ===========================================================================
+# NOTE:
+# For cross-compilation/multiarch support:
+# - Uncomment the following lines to replace the `FROM alpine` below.
+# - Pull the latest release of the `qemu-<arch>-static` binaries into your
+#   build directory.
+#   @see https://github.com/multiarch/qemu-user-static/releases/
+# - Specify one of `arm64`, `arm32v7`, or `amd64` as a `--build-arg` param.
+# ```
+# ARG target=arm64
+# FROM $target/alpine
+# COPY qemu-* /usr/bin/
+# ```
+# ===========================================================================
 FROM alpine:3.7
 LABEL maintainer="Preetha Appan <preetha@hashicorp.com> (@preetapan)"
 
@@ -15,7 +29,7 @@ RUN addgroup consul && \
 # Set up certificates, base tools, and Consul.
 RUN set -eux && \
     apk add --no-cache ca-certificates curl dumb-init gnupg libcap openssl su-exec && \
-    gpg --keyserver pgp.mit.edu --recv-keys 91A6E7F85D05C65630BEF18951852D87348FFC4C && \
+    gpg --keyserver pool.sks-keyservers.net --recv-keys 91A6E7F85D05C65630BEF18951852D87348FFC4C && \
     mkdir -p /tmp/build && \
     cd /tmp/build && \
     apkArch="$(apk --print-arch)" && \
@@ -36,7 +50,7 @@ RUN set -eux && \
     rm -rf /tmp/build && \
     apk del gnupg openssl && \
     rm -rf /root/.gnupg && \
-# tiny smoke test to ensure the binary we downloaded runs
+    # tiny smoke test to ensure the binary we downloaded runs
     consul version
 
 # The /consul/data dir is used by Consul to store state. The agent will be started
